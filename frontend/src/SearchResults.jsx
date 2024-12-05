@@ -16,7 +16,7 @@ function SearchResults() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/search?name=${name}`);
+        const response = await axios.get(`https://frontend-1-7f1d.onrender.com/api/search?name=${name}`);
         setUsers(response.data);
         setErrorMessage('');
       } catch (error) {
