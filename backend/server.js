@@ -1,36 +1,55 @@
-const express = require('express');
-const fs = require('fs');
-const cors = require('cors');
+const express = require("express");
+const fs = require("fs");
+const cors = require("cors");
 
 const app = express();
 const PORT = 3000;
 
-// Middleware
 app.use(cors());
-
-// Route to fetch all data
-app.get('/api/data', (req, res) => {
-  fs.readFile('data.json', 'utf8', (err, data) => {
+app.get("/api/data", (req, res) => {
+  fs.readFile("data.json", "utf8", (err, data) => {
     if (err) {
-      return res.status(500).json({ error: 'Error reading file' });
+      return res.status(500).json({ error: "Error reading file" });
     }
-    res.json(JSON.parse(data));
+
+    try {
+      res.json(JSON.parse(data));
+    } catch (parseError) {
+      res.status(500).json({ error: "Error parsing JSON data" });
+    }
   });
 });
 
-// Route to fetch users by name
-app.get('/api/search', (req, res) => {
+app.get("/api/search", (req, res) => {
   const { name } = req.query;
-  fs.readFile('data.json', 'utf8', (err, data) => {
+
+  if (!name) {
+    return res.status(400).json({ error: "Name query parameter is required" });
+  }
+
+  fs.readFile("data.json", "utf8", (err, data) => {
     if (err) {
-      return res.status(500).json({ error: 'Error reading file' });
+      return res.status(500).json({ error: "Error reading file" });
     }
-    const users = JSON.parse(data);
-    const filteredUsers = users.filter(
-      (user) => 
-        `${user.first_name} ${user.last_name}`.toLowerCase().includes(name.toLowerCase())
-    );
-    res.json(filteredUsers);
+
+    try {
+      const users = JSON.parse(data);
+
+      const filteredUsers = users.filter((user) => {
+        return (
+          user &&
+          user.first_name &&
+          user.last_name &&
+          `${user.first_name} ${user.last_name}`
+            .toLowerCase()
+            .includes(name.toLowerCase())
+        );
+      });
+
+      res.json(filteredUsers);
+    } catch (parseError) {
+      res.status(500).json({ error: "Error parsing JSON data" });
+    }
   });
 });
 
